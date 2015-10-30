@@ -104,14 +104,14 @@ By default, all comments are ignored. Set `compareComments` options to `true` to
 
 
 #### Whitespace comparison
-By default, all text nodes (text, CDATA, comments if enabled as mentioned above) compared with respect 
+By default, all text nodes (text, CDATA, comments if enabled as mentioned above) compared with respect
 to leading and trailing whitespaces.
 Set `stripSpaces` option to `true` to automatically strip spaces in text and comment nodes. This option
 doesn't change the way CDATA sections is compared, they are always compared with respect to whitespaces.
 
 ### Cli utility
 
-When installed globally with `npm install -g dom-compare` cli utility is available. 
+When installed globally with `npm install -g dom-compare` cli utility is available.
 See usage information and command-line options with `domcompare --help`
 
 You can try it on bundled samples:
@@ -128,7 +128,7 @@ You can try it on bundled samples:
   /document
       Expected CDATA value '  cdata node' instead of 'cdata node  '
 ```
-  
+
 
 DOM Canonic Form
 ----------------
@@ -156,7 +156,7 @@ Consider the following XML-document...
 ...and code snippet...
 ```javascript
 var canonizingSerializer = new (require('dom-compare').XMLSerializer)();
-var doc = ...; // parse above document somehow 
+var doc = ...; // parse above document somehow
 console.log(canonizingSerializer.serializeToString(doc));
 ```
 You'll receive the following output
@@ -174,4 +174,38 @@ You'll receive the following output
         </element>
     </element>
 </document>
+```
+
+Ignoring some attribute or childnode for some element
+----------------
+
+It will read a file to add each line in a file to ignoring list.
+2 perspective, 2 file.
+```javascript
+var compare = require('dom-compare').compare,
+    reporter = require('dom-compare').GroupingReporter,
+    jsdom = require("jsdom").jsdom,
+    fs = require('fs'),
+    expected = jsdom(fs.readFileSync('expect.html')), // expected DOM tree
+    actual = jsdom(fs.readFileSync('actual.html')), // actual one
+    result, diff, groupedDiff;
+
+var options = {
+    stripSpaces: true
+}
+
+// compare to DOM trees, get a result object
+result = compare(expected, actual, options, "attributeExclude.conf", "elementExclude.conf");
+
+// get comparison result
+console.log(result.getResult()); // false cause' trees are different
+
+// get all differences
+diff = result.getDifferences(); // array of diff-objects
+
+// differences, grouped by node XPath
+grouped = reporter.getDifferences(result); // object, key - node XPATH, value - array of differences (strings)
+
+// string representation
+console.log(reporter.report(result));
 ```
